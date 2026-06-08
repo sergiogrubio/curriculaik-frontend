@@ -1,0 +1,28 @@
+{
+  "app_name": "curriculAIk",
+  "tagline": "Generador de materiales didácticos con IA",
+  "nav": {
+    "projects": "Proyectos",
+    "new_project": "Nuevo Proyecto",
+    "settings": "Configuración"
+  },
+  "actions": {
+    "generate": "Generar",
+    "upload": "Subir",
+    "download": "Descargar",
+    "save": "Guardar",
+    "cancel": "Cancelar"
+  },
+  "materials": {
+    "notes": "Apuntes",
+    "slides": "Presentación",
+    "exercises": "Ejercicios",
+    "exam": "Examen"
+  },
+  "cost": {
+    "session": "Coste de sesión",
+    "total": "Coste total",
+    "tokens_in": "Tokens entrada",
+    "tokens_out": "Tokens salida"
+  }
+}

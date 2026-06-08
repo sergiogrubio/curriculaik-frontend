@@ -1,0 +1,28 @@
+{
+  "app_name": "curriculAIk",
+  "tagline": "AI-powered teaching material generator",
+  "nav": {
+    "projects": "Projects",
+    "new_project": "New Project",
+    "settings": "Settings"
+  },
+  "actions": {
+    "generate": "Generate",
+    "upload": "Upload",
+    "download": "Download",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "materials": {
+    "notes": "Notes",
+    "slides": "Slides",
+    "exercises": "Exercises",
+    "exam": "Exam"
+  },
+  "cost": {
+    "session": "Session cost",
+    "total": "Total cost",
+    "tokens_in": "Tokens in",
+    "tokens_out": "Tokens out"
+  }
+}
