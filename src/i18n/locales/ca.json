@@ -1,0 +1,81 @@
+{
+  "app_name": "curriculAIk",
+  "tagline": "Generador de materials didàctics amb IA",
+  "nav": {
+    "projects": "Projectes",
+    "new_project": "Nou Projecte",
+    "settings": "Configuració"
+  },
+  "project": {
+    "title": "Projecte",
+    "subject": "Assignatura",
+    "course": "Curs",
+    "language": "Idioma",
+    "status": "Estat",
+    "created": "Creat",
+    "topics": "Unitats"
+  },
+  "actions": {
+    "generate": "Generar",
+    "upload": "Pujar",
+    "download": "Descarregar",
+    "save": "Desar",
+    "cancel": "Cancel·lar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "new": "Nou",
+    "back": "Tornar",
+    "next": "Següent"
+  },
+  "upload": {
+    "curriculum": "Pujar Programació",
+    "curriculum_hint": "Puja la teva programació didàctica (.docx o .pdf)",
+    "regulation": "Pujar Normativa",
+    "regulation_hint": "Puja la normativa oficial BOE/BOIB (.pdf)",
+    "sources": "Pujar Materials",
+    "sources_hint": "Puja un ZIP amb els teus materials existents (apunts, diapositives, llibres...)",
+    "drop_here": "Arrossega aquí o fes clic per seleccionar",
+    "processing": "Processant..."
+  },
+  "materials": {
+    "notes": "Apunts",
+    "slides": "Presentació",
+    "exercises": "Exercicis",
+    "exam": "Examen",
+    "generate_all": "Generar Tot",
+    "generating": "Generant..."
+  },
+  "topics": {
+    "title": "Unitats",
+    "regular": "Regular",
+    "extension": "Ampliació",
+    "pending": "Pendent",
+    "in_progress": "En Progrés",
+    "complete": "Completat"
+  },
+  "cost": {
+    "session": "Cost de sessió",
+    "total": "Cost total",
+    "tokens_in": "Tokens entrada",
+    "tokens_out": "Tokens sortida",
+    "usd": "USD"
+  },
+  "theme": {
+    "title": "Tema Visual",
+    "dark_tech": "Dark Tech",
+    "light_academic": "Light Academic",
+    "neutral_corporate": "Neutral Corporate",
+    "customize": "Personalitzar"
+  },
+  "status": {
+    "pending": "Pendent",
+    "processing": "Processant",
+    "complete": "Completat",
+    "error": "Error"
+  },
+  "errors": {
+    "generic": "Alguna cosa ha fallat. Si us plau, torna-ho a intentar.",
+    "upload_failed": "Error en pujar. Comprova el format del fitxer.",
+    "generation_failed": "Error en generar. Si us plau, torna-ho a intentar."
+  }
+}

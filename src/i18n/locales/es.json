@@ -1,0 +1,81 @@
+{
+  "app_name": "curriculAIk",
+  "tagline": "Generador de materiales didácticos con IA",
+  "nav": {
+    "projects": "Proyectos",
+    "new_project": "Nuevo Proyecto",
+    "settings": "Configuración"
+  },
+  "project": {
+    "title": "Proyecto",
+    "subject": "Asignatura",
+    "course": "Curso",
+    "language": "Idioma",
+    "status": "Estado",
+    "created": "Creado",
+    "topics": "Unidades"
+  },
+  "actions": {
+    "generate": "Generar",
+    "upload": "Subir",
+    "download": "Descargar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "new": "Nuevo",
+    "back": "Volver",
+    "next": "Siguiente"
+  },
+  "upload": {
+    "curriculum": "Subir Programación",
+    "curriculum_hint": "Sube tu programación didáctica (.docx o .pdf)",
+    "regulation": "Subir Normativa",
+    "regulation_hint": "Sube la normativa oficial BOE/BOIB (.pdf)",
+    "sources": "Subir Materiales",
+    "sources_hint": "Sube un ZIP con tus materiales existentes (apuntes, diapositivas, libros...)",
+    "drop_here": "Arrastra aquí o haz clic para seleccionar",
+    "processing": "Procesando..."
+  },
+  "materials": {
+    "notes": "Apuntes",
+    "slides": "Presentación",
+    "exercises": "Ejercicios",
+    "exam": "Examen",
+    "generate_all": "Generar Todo",
+    "generating": "Generando..."
+  },
+  "topics": {
+    "title": "Unidades",
+    "regular": "Regular",
+    "extension": "Ampliación",
+    "pending": "Pendiente",
+    "in_progress": "En Progreso",
+    "complete": "Completado"
+  },
+  "cost": {
+    "session": "Coste de sesión",
+    "total": "Coste total",
+    "tokens_in": "Tokens entrada",
+    "tokens_out": "Tokens salida",
+    "usd": "USD"
+  },
+  "theme": {
+    "title": "Tema Visual",
+    "dark_tech": "Dark Tech",
+    "light_academic": "Light Academic",
+    "neutral_corporate": "Neutral Corporate",
+    "customize": "Personalizar"
+  },
+  "status": {
+    "pending": "Pendiente",
+    "processing": "Procesando",
+    "complete": "Completado",
+    "error": "Error"
+  },
+  "errors": {
+    "generic": "Algo ha fallado. Por favor, inténtalo de nuevo.",
+    "upload_failed": "Error al subir. Comprueba el formato del archivo.",
+    "generation_failed": "Error al generar. Por favor, inténtalo de nuevo."
+  }
+}

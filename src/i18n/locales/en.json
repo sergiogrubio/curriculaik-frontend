@@ -1,0 +1,81 @@
+{
+  "app_name": "curriculAIk",
+  "tagline": "AI-powered teaching material generator",
+  "nav": {
+    "projects": "Projects",
+    "new_project": "New Project",
+    "settings": "Settings"
+  },
+  "project": {
+    "title": "Project",
+    "subject": "Subject",
+    "course": "Course",
+    "language": "Language",
+    "status": "Status",
+    "created": "Created",
+    "topics": "Topics"
+  },
+  "actions": {
+    "generate": "Generate",
+    "upload": "Upload",
+    "download": "Download",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "new": "New",
+    "back": "Back",
+    "next": "Next"
+  },
+  "upload": {
+    "curriculum": "Upload Curriculum",
+    "curriculum_hint": "Upload your curriculum document (.docx or .pdf)",
+    "regulation": "Upload Regulation",
+    "regulation_hint": "Upload the official BOE/BOIB regulation (.pdf)",
+    "sources": "Upload Source Materials",
+    "sources_hint": "Upload a ZIP file with your existing materials (notes, slides, books...)",
+    "drop_here": "Drop files here or click to browse",
+    "processing": "Processing..."
+  },
+  "materials": {
+    "notes": "Notes",
+    "slides": "Slides",
+    "exercises": "Exercises",
+    "exam": "Exam",
+    "generate_all": "Generate All",
+    "generating": "Generating..."
+  },
+  "topics": {
+    "title": "Topics",
+    "regular": "Regular",
+    "extension": "Extension",
+    "pending": "Pending",
+    "in_progress": "In Progress",
+    "complete": "Complete"
+  },
+  "cost": {
+    "session": "Session cost",
+    "total": "Total cost",
+    "tokens_in": "Tokens in",
+    "tokens_out": "Tokens out",
+    "usd": "USD"
+  },
+  "theme": {
+    "title": "Theme",
+    "dark_tech": "Dark Tech",
+    "light_academic": "Light Academic",
+    "neutral_corporate": "Neutral Corporate",
+    "customize": "Customize"
+  },
+  "status": {
+    "pending": "Pending",
+    "processing": "Processing",
+    "complete": "Complete",
+    "error": "Error"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "upload_failed": "Upload failed. Please check the file format.",
+    "generation_failed": "Generation failed. Please try again."
+  }
+}
