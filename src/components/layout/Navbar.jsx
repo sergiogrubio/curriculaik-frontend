@@ -25,9 +25,8 @@ export default function Navbar() {
 
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2">
-        <span className="text-2xl font-bold" style={{ color: theme.primary }}>
-          curriculAI
-        </span>
+        <span className="text-2xl font-bold" style={{ color: theme.text }}>curricul</span>
+        <span className="text-2xl font-bold" style={{ color: theme.primary }}>(AI)</span>
         <span className="text-2xl font-bold" style={{ color: theme.text }}>k</span>
       </Link>
 
