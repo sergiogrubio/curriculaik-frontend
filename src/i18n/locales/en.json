@@ -77,5 +77,14 @@
     "generic": "Something went wrong. Please try again.",
     "upload_failed": "Upload failed. Please check the file format.",
     "generation_failed": "Generation failed. Please try again."
+  },
+  "form": {
+    "project_name": "Project name",
+    "module_code": "Module code",
+    "subject": "Subject",
+    "course": "Course",
+    "institution": "Institution",
+    "language": "Language",
+    "at_least_one": "at least one required"
   }
 }

@@ -28,11 +28,11 @@
     "next": "Siguiente"
   },
   "upload": {
-    "curriculum": "Subir Programación Didáctica",
+    "curriculum": "Subir programación didáctica",
     "curriculum_hint": "Sube tu programación didáctica (.docx o .pdf)",
-    "regulation": "Subir Normativa Oficial",
+    "regulation": "Subir normativa oficial",
     "regulation_hint": "Sube la normativa oficial BOE/BOIB (.pdf)",
-    "sources": "Subir Materiales",
+    "sources": "Subir materiales",
     "sources_hint": "Sube un ZIP con tus materiales existentes (apuntes, diapositivas, libros...)",
     "drop_here": "Arrastra aquí o haz clic para seleccionar",
     "processing": "Procesando..."
@@ -77,5 +77,14 @@
     "generic": "Algo ha fallado. Por favor, inténtalo de nuevo.",
     "upload_failed": "Error al subir. Comprueba el formato del archivo.",
     "generation_failed": "Error al generar. Por favor, inténtalo de nuevo."
+  },
+  "form": {
+    "project_name": "Nombre del proyecto",
+    "module_code": "Código del módulo",
+    "subject": "Asignatura",
+    "course": "Curso",
+    "institution": "Centro educativo",
+    "language": "Idioma",
+    "at_least_one": "se requiere al menos uno"
   }
 }

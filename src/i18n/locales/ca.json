@@ -28,11 +28,11 @@
     "next": "Següent"
   },
   "upload": {
-    "curriculum": "Pujar Programació Didàctica",
+    "curriculum": "Pujar programació didàctica",
     "curriculum_hint": "Puja la teva programació didàctica (.docx o .pdf)",
-    "regulation": "Pujar Normativa Oficial",
+    "regulation": "Pujar normativa oficial",
     "regulation_hint": "Puja la normativa oficial BOE/BOIB (.pdf)",
-    "sources": "Pujar Materials",
+    "sources": "Pujar materials",
     "sources_hint": "Puja un ZIP amb els teus materials existents (apunts, diapositives, llibres...)",
     "drop_here": "Arrossega aquí o fes clic per seleccionar",
     "processing": "Processant..."
@@ -77,5 +77,14 @@
     "generic": "Alguna cosa ha fallat. Si us plau, torna-ho a intentar.",
     "upload_failed": "Error en pujar. Comprova el format del fitxer.",
     "generation_failed": "Error en generar. Si us plau, torna-ho a intentar."
+  },
+  "form": {
+    "project_name": "Nom del projecte",
+    "module_code": "Codi del mòdul",
+    "subject": "Assignatura",
+    "course": "Curs",
+    "institution": "Centre educatiu",
+    "language": "Idioma",
+    "at_least_one": "cal almenys un"
   }
 }
