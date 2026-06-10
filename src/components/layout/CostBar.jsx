@@ -4,10 +4,9 @@ import { useState, useEffect } from 'react'
 
 export default function CostBar() {
   const { t } = useTranslation()
-  const { theme } = useTheme()
+  const { theme, currency } = useTheme()
   const [cost, setCost] = useState({ session: 0.00, tokens_in: 0, tokens_out: 0 })
 
-  // Will be replaced with real API data later
   useEffect(() => {
     const stored = localStorage.getItem('session_cost')
     if (stored) setCost(JSON.parse(stored))
@@ -25,7 +24,9 @@ export default function CostBar() {
         {t('cost.tokens_out')}: <strong style={{ color: theme.text }}>{cost.tokens_out.toLocaleString()}</strong>
       </span>
       <span style={{ color: theme.textSecondary }}>
-        {t('cost.session')}: <strong style={{ color: theme.primary }}>${cost.session.toFixed(4)} {t('cost.usd')}</strong>
+        {t('cost.session')}: <strong style={{ color: theme.primary }}>
+          {currency.symbol}{cost.session.toFixed(4)} {currency.code}
+        </strong>
       </span>
     </div>
   )

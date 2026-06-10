@@ -33,14 +33,24 @@ const themes = {
   },
 }
 
+const currencies = [
+  { code: 'USD', symbol: '$', label: 'US Dollar' },
+  { code: 'EUR', symbol: '€', label: 'Euro' },
+  { code: 'GBP', symbol: '£', label: 'British Pound' },
+]
+
 const ThemeContext = createContext(null)
 
 export function ThemeProvider({ children }) {
   const [themeName, setThemeName] = useState('dark_tech')
+  const [currency, setCurrency] = useState(currencies[0])
   const theme = themes[themeName]
 
   return (
-    <ThemeContext.Provider value={{ theme, themeName, setThemeName, themes }}>
+    <ThemeContext.Provider value={{
+      theme, themeName, setThemeName, themes,
+      currency, setCurrency, currencies
+    }}>
       <div style={{
         '--bg': theme.bg,
         '--surface': theme.surface,
@@ -60,4 +70,4 @@ export function ThemeProvider({ children }) {
 }
 
 export const useTheme = () => useContext(ThemeContext)
-export { themes }
+export { themes, currencies }
