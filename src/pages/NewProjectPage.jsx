@@ -81,19 +81,24 @@ export default function NewProjectPage() {
   const [programmeFile, setProgrammeFile] = useState(null)
   const [loading, setLoading] = useState(false)
 
+  const canSubmit = form.name && form.module_code && (regulationFile || programmeFile)
+
   const handleSubmit = async () => {
-    if (!form.name || !form.module_code) return
-    if (!regulationFile && !programmeFile) return
+    if (!canSubmit) return
     setLoading(true)
-    // Will call backend API later
+    // will call backend API — navigate to projects list for now
     setTimeout(() => {
-      navigate('/projects/db-admin-2024')
-    }, 1500)
+      setLoading(false)
+      navigate('/')
+    }, 1000)
   }
 
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
+        <Link to="/" className="text-xs mb-2 block" style={{ color: theme.textSecondary }}>
+          ← {t('nav.projects')}
+        </Link>
         <h1 className="text-3xl font-bold" style={{ color: theme.text }}>
           {t('nav.new_project')}
         </h1>
@@ -105,11 +110,10 @@ export default function NewProjectPage() {
       <div className="space-y-6 p-6 rounded-xl border"
            style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
 
-        {/* Project info */}
         <div className="grid grid-cols-2 gap-4">
           <Input label="Project name" value={form.name}
                  onChange={v => setForm({ ...form, name: v })}
-                 placeholder="e.g. Database Administration 2024" required />
+                 placeholder="e.g. My subject 2024-25" required />
           <Input label="Module code" value={form.module_code}
                  onChange={v => setForm({ ...form, module_code: v })}
                  placeholder="e.g. 0372" required />
@@ -121,7 +125,7 @@ export default function NewProjectPage() {
                  placeholder="e.g. ASIR Year 1" />
           <Input label="Institution" value={form.institution}
                  onChange={v => setForm({ ...form, institution: v })}
-                 placeholder="e.g. IEDIB" />
+                 placeholder="e.g. Your institution" />
           <div>
             <label className="block text-sm font-medium mb-1"
                    style={{ color: theme.text }}>Language</label>
@@ -140,10 +144,10 @@ export default function NewProjectPage() {
 
         <hr style={{ borderColor: theme.border }} />
 
-        {/* File uploads */}
         <div className="space-y-4">
           <h3 className="font-medium text-sm" style={{ color: theme.text }}>
-            Curriculum sources <span style={{ color: theme.textSecondary }}>(at least one required)</span>
+            Curriculum sources{' '}
+            <span style={{ color: theme.textSecondary }}>(at least one required)</span>
           </h3>
           <FileDropZone
             label={t('upload.regulation')}
@@ -163,7 +167,6 @@ export default function NewProjectPage() {
 
         <hr style={{ borderColor: theme.border }} />
 
-        {/* Actions */}
         <div className="flex gap-3 justify-end">
           <button
             onClick={() => navigate('/')}
@@ -174,7 +177,7 @@ export default function NewProjectPage() {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={loading || !form.name || !form.module_code || (!regulationFile && !programmeFile)}
+            disabled={loading || !canSubmit}
             className="px-6 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-40"
             style={{ backgroundColor: theme.primary, color: '#fff' }}
           >
