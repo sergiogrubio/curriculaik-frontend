@@ -28,9 +28,9 @@
     "next": "Next"
   },
   "upload": {
-    "curriculum": "Upload Curriculum",
-    "curriculum_hint": "Upload your curriculum document (.docx or .pdf)",
-    "regulation": "Upload Regulation",
+    "curriculum": "Upload Teaching Programme",
+    "curriculum_hint": "Upload your teaching programme (.docx or .pdf)",
+    "regulation": "Upload Official Regulation",
     "regulation_hint": "Upload the official BOE/BOIB regulation (.pdf)",
     "sources": "Upload Source Materials",
     "sources_hint": "Upload a ZIP file with your existing materials (notes, slides, books...)",

@@ -28,9 +28,9 @@
     "next": "Següent"
   },
   "upload": {
-    "curriculum": "Pujar Programació",
+    "curriculum": "Pujar Programació Didàctica",
     "curriculum_hint": "Puja la teva programació didàctica (.docx o .pdf)",
-    "regulation": "Pujar Normativa",
+    "regulation": "Pujar Normativa Oficial",
     "regulation_hint": "Puja la normativa oficial BOE/BOIB (.pdf)",
     "sources": "Pujar Materials",
     "sources_hint": "Puja un ZIP amb els teus materials existents (apunts, diapositives, llibres...)",

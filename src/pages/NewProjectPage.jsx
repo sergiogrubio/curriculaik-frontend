@@ -146,8 +146,8 @@ export default function NewProjectPage() {
 
         <div className="space-y-4">
           <h3 className="font-medium text-sm" style={{ color: theme.text }}>
-            Curriculum sources{' '}
-            <span style={{ color: theme.textSecondary }}>(at least one required)</span>
+            Curriculum sources (regulation + teaching programme){' '}
+            <span style={{ color: theme.textSecondary }}>— at least one required</span>
           </h3>
           <FileDropZone
             label={t('upload.regulation')}

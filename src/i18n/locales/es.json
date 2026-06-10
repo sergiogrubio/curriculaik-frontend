@@ -28,9 +28,9 @@
     "next": "Siguiente"
   },
   "upload": {
-    "curriculum": "Subir Programación",
+    "curriculum": "Subir Programación Didáctica",
     "curriculum_hint": "Sube tu programación didáctica (.docx o .pdf)",
-    "regulation": "Subir Normativa",
+    "regulation": "Subir Normativa Oficial",
     "regulation_hint": "Sube la normativa oficial BOE/BOIB (.pdf)",
     "sources": "Subir Materiales",
     "sources_hint": "Sube un ZIP con tus materiales existentes (apuntes, diapositivas, libros...)",
