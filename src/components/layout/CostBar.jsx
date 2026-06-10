@@ -1,12 +1,15 @@
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '../../context/ThemeContext.jsx'
 import { useExchangeRate } from '../../hooks/useExchangeRate.js'
+import { useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 
 export default function CostBar() {
   const { t } = useTranslation()
   const { theme, currency } = useTheme()
   const { convert, loading } = useExchangeRate()
+  const location = useLocation()
+
   const [cost, setCost] = useState({
     session: 0.00,
     project_total: 0.00,
@@ -14,12 +17,17 @@ export default function CostBar() {
     tokens_out: 0
   })
 
+  // Detect if we are inside a project
+  const projectMatch = location.pathname.match(/^\/projects\/([^/]+)/)
+  const insideProject = projectMatch !== null
+
   useEffect(() => {
     const stored = localStorage.getItem('session_cost')
     if (stored) setCost(JSON.parse(stored))
   }, [])
 
-  const fmt = (val) => loading ? '...' : `${currency.symbol}${convert(val, currency.code).toFixed(4)}`
+  const fmt = (val) =>
+    loading ? '...' : `${currency.symbol}${convert(val, currency.code).toFixed(4)} ${currency.code}`
 
   return (
     <div
@@ -38,14 +46,16 @@ export default function CostBar() {
       </span>
       <span style={{ color: theme.textSecondary }}>
         {t('cost.session')}: <strong style={{ color: theme.primary }}>
-          {fmt(cost.session)} {currency.code}
+          {fmt(cost.session)}
         </strong>
       </span>
-      <span style={{ color: theme.textSecondary }}>
-        {t('cost.project_total')}: <strong style={{ color: theme.secondary }}>
-          {fmt(cost.project_total)} {currency.code}
-        </strong>
-      </span>
+      {insideProject && (
+        <span style={{ color: theme.textSecondary }}>
+          {t('cost.project_total')}: <strong style={{ color: theme.secondary }}>
+            {fmt(cost.project_total)}
+          </strong>
+        </span>
+      )}
     </div>
   )
 }
