@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '../context/ThemeContext.jsx'
+import { useExchangeRate } from '../hooks/useExchangeRate.js'
 
 export default function SettingsPage() {
   const { t, i18n } = useTranslation()
   const { theme, themeName, setThemeName, themes, currency, setCurrency, currencies } = useTheme()
+  const { rates, loading, lastUpdated } = useExchangeRate()
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -91,9 +93,23 @@ export default function SettingsPage() {
             </button>
           ))}
         </div>
-        <p className="text-xs mt-3" style={{ color: theme.textSecondary }}>
-          Note: Azure charges in USD. Other currencies are shown for reference only.
-        </p>
+        <div className="mt-3 space-y-1">
+          <p className="text-xs" style={{ color: theme.textSecondary }}>
+            Azure charges in USD. Other currencies use live exchange rates.
+          </p>
+          {!loading && lastUpdated && (
+            <p className="text-xs" style={{ color: theme.textSecondary }}>
+              Rates updated: {lastUpdated.toLocaleTimeString()} ·
+              {rates.EUR && ` 1 USD = ${rates.EUR.toFixed(4)} EUR`}
+              {rates.GBP && ` · 1 USD = ${rates.GBP.toFixed(4)} GBP`}
+            </p>
+          )}
+          {loading && (
+            <p className="text-xs" style={{ color: theme.textSecondary }}>
+              Fetching live rates...
+            </p>
+          )}
+        </div>
       </div>
     </div>
   )
