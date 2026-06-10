@@ -6,15 +6,20 @@ import { useState, useEffect } from 'react'
 export default function CostBar() {
   const { t } = useTranslation()
   const { theme, currency } = useTheme()
-  const { convert, loading, lastUpdated } = useExchangeRate()
-  const [cost, setCost] = useState({ session: 0.00, tokens_in: 0, tokens_out: 0 })
+  const { convert, loading } = useExchangeRate()
+  const [cost, setCost] = useState({
+    session: 0.00,
+    project_total: 0.00,
+    tokens_in: 0,
+    tokens_out: 0
+  })
 
   useEffect(() => {
     const stored = localStorage.getItem('session_cost')
     if (stored) setCost(JSON.parse(stored))
   }, [])
 
-  const displayAmount = convert(cost.session, currency.code)
+  const fmt = (val) => loading ? '...' : `${currency.symbol}${convert(val, currency.code).toFixed(4)}`
 
   return (
     <div
@@ -33,14 +38,14 @@ export default function CostBar() {
       </span>
       <span style={{ color: theme.textSecondary }}>
         {t('cost.session')}: <strong style={{ color: theme.primary }}>
-          {loading ? '...' : `${currency.symbol}${displayAmount.toFixed(4)} ${currency.code}`}
+          {fmt(cost.session)} {currency.code}
         </strong>
       </span>
-      {lastUpdated && currency.code !== 'USD' && (
-        <span style={{ color: theme.textSecondary }} title={`Rate updated: ${lastUpdated.toLocaleTimeString()}`}>
-          🔄 {lastUpdated.toLocaleTimeString()}
-        </span>
-      )}
+      <span style={{ color: theme.textSecondary }}>
+        {t('cost.project_total')}: <strong style={{ color: theme.secondary }}>
+          {fmt(cost.project_total)} {currency.code}
+        </strong>
+      </span>
     </div>
   )
 }

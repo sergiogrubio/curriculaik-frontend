@@ -56,9 +56,20 @@
   "cost": {
     "session": "Session cost",
     "total": "Total cost",
+    "project_total": "Project total",
     "tokens_in": "Tokens in",
     "tokens_out": "Tokens out",
-    "usd": "USD"
+    "usd": "USD",
+    "estimated": "Estimated cost",
+    "confirm_generate": "This will call the Azure OpenAI API.",
+    "confirm_generate_all": "This will generate 4 documents for this topic.",
+    "confirm_continue": "Continue?",
+    "report": "Cost report",
+    "export_csv": "Export CSV",
+    "export_pdf": "Export PDF",
+    "operation": "Operation",
+    "topic": "Topic",
+    "no_costs": "No costs recorded yet."
   },
   "theme": {
     "title": "Theme",

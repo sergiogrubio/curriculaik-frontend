@@ -56,9 +56,20 @@
   "cost": {
     "session": "Cost de sessió",
     "total": "Cost total",
+    "project_total": "Cost total del projecte",
     "tokens_in": "Tokens entrada",
     "tokens_out": "Tokens sortida",
-    "usd": "USD"
+    "usd": "USD",
+    "estimated": "Cost estimat",
+    "confirm_generate": "Això farà una crida a l'API d'Azure OpenAI.",
+    "confirm_generate_all": "Això generarà 4 documents per a aquesta unitat.",
+    "confirm_continue": "Continuar?",
+    "report": "Informe de costos",
+    "export_csv": "Exportar CSV",
+    "export_pdf": "Exportar PDF",
+    "operation": "Operació",
+    "topic": "Unitat",
+    "no_costs": "Encara no hi ha costos registrats."
   },
   "theme": {
     "title": "Tema Visual",
