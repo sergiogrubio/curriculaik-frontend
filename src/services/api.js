@@ -86,6 +86,12 @@ export const generateNotes = (projectId, topicId) =>
 export const generateSlides = (projectId, topicId) =>
   API.post(`/api/projects/${projectId}/topics/${topicId}/generate/slides`).then(r => r.data)
 
+export const generateExercises = (projectId, topicId) =>
+  API.post(`/api/projects/${projectId}/topics/${topicId}/generate/exercises`).then(r => r.data)
+
+export const generateExam = (projectId, topicId) =>
+  API.post(`/api/projects/${projectId}/topics/${topicId}/generate/exam`).then(r => r.data)
+
 // ─── Costs ────────────────────────────────────────────────────────────────────
 export const getCostSummary = (projectId) =>
   API.get(`/api/projects/${projectId}/cost`).then(r => r.data)
