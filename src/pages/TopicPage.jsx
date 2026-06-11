@@ -3,31 +3,31 @@ import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect, useCallback } from 'react'
 import { useTheme } from '../context/ThemeContext.jsx'
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
-import { getTopic, getMaterials, generateNotes, generateSlides, generateExercises, generateExam, downloadMaterial } from '../services/api.js'
+import {
+  getTopic, getMaterials, downloadMaterial,
+  generateNotes, generateSlides, generateExercises, generateExam
+} from '../services/api.js'
 
 const ESTIMATED_COSTS = {
   notes: 0.08, slides: 0.12, exercises: 0.06, exam: 0.06, all: 0.32
 }
-
 const MATERIAL_ICONS  = { notes: '📝', slides: '🎨', exercises: '💪', exam: '📋' }
 const MATERIAL_FORMAT = { notes: 'docx', slides: 'pptx', exercises: 'docx', exam: 'docx' }
 
-function MaterialCard({ type, material, onGenerate, onDownload, projectId, topicId }) {
+function MaterialCard({ type, material, onGenerate, onDownload }) {
   const { t } = useTranslation()
   const { theme } = useTheme()
-
   const statusColors = {
-    pending:    { bg: theme.bg,           text: theme.textSecondary },
+    pending:    { bg: theme.bg,               text: theme.textSecondary },
     generating: { bg: `${theme.secondary}22`, text: theme.secondary },
-    complete:   { bg: '#66BB6A22',        text: '#66BB6A'           },
-    error:      { bg: '#EF535022',        text: '#EF5350'           },
+    complete:   { bg: '#66BB6A22',            text: '#66BB6A' },
+    error:      { bg: '#EF535022',            text: '#EF5350' },
   }
   const sc = statusColors[material?.status || 'pending']
 
   return (
     <div className="p-5 rounded-xl border flex flex-col gap-3"
          style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
-
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-2xl">{MATERIAL_ICONS[type]}</span>
@@ -40,11 +40,9 @@ function MaterialCard({ type, material, onGenerate, onDownload, projectId, topic
           {material?.status || 'pending'}
         </span>
       </div>
-
       <div className="text-xs" style={{ color: theme.textSecondary }}>
         ~${ESTIMATED_COSTS[type]} · .{MATERIAL_FORMAT[type]}
       </div>
-
       <div className="flex gap-2 mt-auto">
         {material?.status === 'complete' && (
           <button
@@ -80,7 +78,7 @@ export default function TopicPage() {
   const [topic,     setTopic]     = useState(null)
   const [materials, setMaterials] = useState({})
   const [loading,   setLoading]   = useState(true)
-  const [dialog,    setDialog]    = useState({ open: false, type: null })
+  const [dialog,    setDialog]    = useState({ open: false, type: null, isAll: false })
 
   const loadData = useCallback(async () => {
     try {
@@ -89,7 +87,6 @@ export default function TopicPage() {
         getMaterials(projectId, topicId)
       ])
       setTopic(topicData)
-      // Convert array to map by type
       const matsMap = {}
       matsData.forEach(m => { matsMap[m.type] = m })
       setMaterials(matsMap)
@@ -100,11 +97,8 @@ export default function TopicPage() {
     }
   }, [projectId, topicId])
 
-  useEffect(() => {
-    loadData()
-  }, [loadData])
+  useEffect(() => { loadData() }, [loadData])
 
-  // Poll for generating status
   useEffect(() => {
     const generating = Object.values(materials).some(m => m.status === 'generating')
     if (!generating) return
@@ -118,7 +112,7 @@ export default function TopicPage() {
 
   const handleConfirm = async () => {
     const type = dialog.type
-    setDialog({ open: false, type: null })
+    setDialog({ open: false, type: null, isAll: false })
 
     if (type === 'all') {
       await Promise.all([
@@ -144,7 +138,6 @@ export default function TopicPage() {
 
     setTimeout(loadData, 2000)
   }
-  }
 
   const handleDownload = (type) => {
     downloadMaterial(projectId, topicId, type)
@@ -169,12 +162,11 @@ export default function TopicPage() {
       <ConfirmDialog
         open={dialog.open}
         onConfirm={handleConfirm}
-        onCancel={() => setDialog({ open: false, type: null })}
+        onCancel={() => setDialog({ open: false, type: null, isAll: false })}
         estimatedCost={dialog.type ? ESTIMATED_COSTS[dialog.type] : 0}
         isAll={dialog.isAll}
       />
 
-      {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs mb-6"
            style={{ color: theme.textSecondary }}>
         <Link to="/" style={{ color: theme.textSecondary }}>{t('nav.projects')}</Link>
@@ -188,7 +180,6 @@ export default function TopicPage() {
         </span>
       </div>
 
-      {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold" style={{ color: theme.text }}>
@@ -209,8 +200,6 @@ export default function TopicPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        {/* Left: topic info */}
         <div className="space-y-4">
           {topic.key_concepts?.length > 0 && (
             <div className="p-4 rounded-xl border"
@@ -227,7 +216,6 @@ export default function TopicPage() {
               </div>
             </div>
           )}
-
           {topic.subtopics?.length > 0 && (
             <div className="p-4 rounded-xl border"
                  style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
@@ -236,10 +224,7 @@ export default function TopicPage() {
               <ul className="space-y-1">
                 {topic.subtopics.map((s, i) => (
                   <li key={i} className="text-xs py-1"
-                      style={{
-                        color: theme.textSecondary,
-                        borderBottom: `1px solid ${theme.border}`
-                      }}>
+                      style={{ color: theme.textSecondary, borderBottom: `1px solid ${theme.border}` }}>
                     {s}
                   </li>
                 ))}
@@ -248,7 +233,6 @@ export default function TopicPage() {
           )}
         </div>
 
-        {/* Right: material cards */}
         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
           {['notes', 'slides', 'exercises', 'exam'].map(type => (
             <MaterialCard
@@ -257,8 +241,6 @@ export default function TopicPage() {
               material={materials[type]}
               onGenerate={handleGenerateClick}
               onDownload={handleDownload}
-              projectId={projectId}
-              topicId={topicId}
             />
           ))}
         </div>
