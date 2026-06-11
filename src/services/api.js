@@ -74,3 +74,27 @@ export const ingestSources = (projectId) =>
 // ─── Costs ────────────────────────────────────────────────────────────────────
 export const getCostSummary = (projectId) =>
   API.get(`/api/projects/${projectId}/cost`).then(r => r.data)
+
+// ─── Materials ────────────────────────────────────────────────────────────────
+export const getMaterials = (projectId, topicId) =>
+  API.get(`/api/projects/${projectId}/topics/${topicId}/materials`).then(r => r.data)
+
+export const downloadMaterial = (projectId, topicId, materialType) => {
+  const url = `${API.defaults.baseURL}/api/projects/${projectId}/topics/${topicId}/materials/${materialType}/download`
+  window.open(url, '_blank')
+}
+
+export const generateNotes = (projectId, topicId) =>
+  API.post(`/api/projects/${projectId}/topics/${topicId}/generate/notes`).then(r => r.data)
+
+// ─── Materials ────────────────────────────────────────────────────────────────
+export const getMaterials = (projectId, topicId) =>
+  API.get(`/api/projects/${projectId}/topics/${topicId}/materials`).then(r => r.data)
+
+export const downloadMaterial = (projectId, topicId, materialType) => {
+  const url = `${API.defaults.baseURL}/api/projects/${projectId}/topics/${topicId}/materials/${materialType}/download`
+  window.open(url, '_blank')
+}
+
+export const generateNotes = (projectId, topicId) =>
+  API.post(`/api/projects/${projectId}/topics/${topicId}/generate/notes`).then(r => r.data)
