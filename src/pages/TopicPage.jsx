@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect, useCallback } from 'react'
 import { useTheme } from '../context/ThemeContext.jsx'
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
-import { getTopic, getMaterials, generateNotes, downloadMaterial } from '../services/api.js'
+import { getTopic, getMaterials, generateNotes, generateSlides, downloadMaterial } from '../services/api.js'
 
 const ESTIMATED_COSTS = {
   notes: 0.08, slides: 0.12, exercises: 0.06, exam: 0.06, all: 0.32
@@ -125,6 +125,8 @@ export default function TopicPage() {
       // slides, exercises, exam generators will be added later
     } else if (type === 'notes') {
       await generateNotes(projectId, topicId)
+    } else if (type === 'slides') {
+      await generateSlides(projectId, topicId)
     }
 
     // Optimistically show generating status

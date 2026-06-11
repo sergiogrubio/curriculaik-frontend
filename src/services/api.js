@@ -83,6 +83,9 @@ export const downloadMaterial = (projectId, topicId, materialType) => {
 export const generateNotes = (projectId, topicId) =>
   API.post(`/api/projects/${projectId}/topics/${topicId}/generate/notes`).then(r => r.data)
 
+export const generateSlides = (projectId, topicId) =>
+  API.post(`/api/projects/${projectId}/topics/${topicId}/generate/slides`).then(r => r.data)
+
 // ─── Costs ────────────────────────────────────────────────────────────────────
 export const getCostSummary = (projectId) =>
   API.get(`/api/projects/${projectId}/cost`).then(r => r.data)
