@@ -6,6 +6,8 @@ import { useTheme } from '../context/ThemeContext.jsx'
 function FileDropZone({ label, hint, accept, onFile, file }) {
   const { theme } = useTheme()
   const { t } = useTranslation()
+  const borderColor = file ? theme.primary : theme.border
+  const bgColor = file ? theme.primary + '22' : theme.bg
 
   return (
     <div>
@@ -14,10 +16,7 @@ function FileDropZone({ label, hint, accept, onFile, file }) {
       <p className="text-xs mb-2" style={{ color: theme.textSecondary }}>{hint}</p>
       <label
         className="flex flex-col items-center justify-center w-full h-28 rounded-lg border-2 border-dashed cursor-pointer transition-colors"
-        style={{
-          borderColor: file ? theme.primary : theme.border,
-          backgroundColor: file ? `${theme.primary}11` : theme.bg,
-        }}
+        style={{ borderColor: borderColor, backgroundColor: bgColor }}
       >
         <input type="file" accept={accept} className="hidden"
                onChange={e => onFile(e.target.files[0])} />
@@ -96,7 +95,7 @@ export default function NewProjectPage() {
     <div className="max-w-2xl mx-auto">
       <div className="mb-8">
         <Link to="/" className="text-xs mb-2 block" style={{ color: theme.textSecondary }}>
-          ← {t('nav.projects')}
+          &larr; {t('nav.projects')}
         </Link>
         <h1 className="text-3xl font-bold" style={{ color: theme.text }}>
           {t('nav.new_project')}
@@ -109,40 +108,22 @@ export default function NewProjectPage() {
       <div className="space-y-6 p-6 rounded-xl border"
            style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
 
-        {/* Project info */}
         <div className="grid grid-cols-2 gap-4">
-          <Input
-            label={t('form.project_name')}
-            value={form.name}
-            onChange={v => setForm({ ...form, name: v })}
-            placeholder="e.g. My subject 2024-25"
-            required
-          />
-          <Input
-            label={t('form.module_code')}
-            value={form.module_code}
-            onChange={v => setForm({ ...form, module_code: v })}
-            placeholder="e.g. 0372"
-            required
-          />
-          <Input
-            label={t('form.subject')}
-            value={form.subject}
-            onChange={v => setForm({ ...form, subject: v })}
-            placeholder="e.g. Database Administration"
-          />
-          <Input
-            label={t('form.course')}
-            value={form.course}
-            onChange={v => setForm({ ...form, course: v })}
-            placeholder="e.g. ASIR Year 1"
-          />
-          <Input
-            label={t('form.institution')}
-            value={form.institution}
-            onChange={v => setForm({ ...form, institution: v })}
-            placeholder="e.g. Your institution"
-          />
+          <Input label={t('form.project_name')} value={form.name}
+                 onChange={v => setForm({ ...form, name: v })}
+                 placeholder="e.g. My subject 2024-25" required />
+          <Input label={t('form.module_code')} value={form.module_code}
+                 onChange={v => setForm({ ...form, module_code: v })}
+                 placeholder="e.g. 0372" required />
+          <Input label={t('form.subject')} value={form.subject}
+                 onChange={v => setForm({ ...form, subject: v })}
+                 placeholder="e.g. Database Administration" />
+          <Input label={t('form.course')} value={form.course}
+                 onChange={v => setForm({ ...form, course: v })}
+                 placeholder="e.g. ASIR Year 1" />
+          <Input label={t('form.institution')} value={form.institution}
+                 onChange={v => setForm({ ...form, institution: v })}
+                 placeholder="e.g. Your institution" />
           <div>
             <label className="block text-sm font-medium mb-1"
                    style={{ color: theme.text }}>
@@ -152,11 +133,7 @@ export default function NewProjectPage() {
               value={form.language}
               onChange={e => setForm({ ...form, language: e.target.value })}
               className="w-full px-3 py-2 rounded-lg border text-sm"
-              style={{
-                backgroundColor: theme.bg,
-                borderColor: theme.border,
-                color: theme.text
-              }}
+              style={{ backgroundColor: theme.bg, borderColor: theme.border, color: theme.text }}
             >
               <option>English</option>
               <option>Español</option>
@@ -167,7 +144,6 @@ export default function NewProjectPage() {
 
         <hr style={{ borderColor: theme.border }} />
 
-        {/* File uploads */}
         <div className="space-y-4">
           <h3 className="font-medium text-sm" style={{ color: theme.text }}>
             {t('upload.regulation')} + {t('upload.curriculum')}{' '}
@@ -193,7 +169,6 @@ export default function NewProjectPage() {
 
         <hr style={{ borderColor: theme.border }} />
 
-        {/* Actions */}
         <div className="flex gap-3 justify-end">
           <button
             onClick={() => navigate('/')}
