@@ -121,22 +121,29 @@ export default function TopicPage() {
     setDialog({ open: false, type: null })
 
     if (type === 'all') {
-      await generateNotes(projectId, topicId)
-      // slides, exercises, exam generators will be added later
-    } else if (type === 'notes') {
-      await generateNotes(projectId, topicId)
-    } else if (type === 'slides') {
-      await generateSlides(projectId, topicId)
+      await Promise.all([
+        generateNotes(projectId, topicId),
+        generateSlides(projectId, topicId),
+        generateExercises(projectId, topicId),
+        generateExam(projectId, topicId),
+      ])
+      setMaterials(prev => ({
+        ...prev,
+        notes:     { status: 'generating' },
+        slides:    { status: 'generating' },
+        exercises: { status: 'generating' },
+        exam:      { status: 'generating' },
+      }))
+    } else {
+      if (type === 'notes')     await generateNotes(projectId, topicId)
+      if (type === 'slides')    await generateSlides(projectId, topicId)
+      if (type === 'exercises') await generateExercises(projectId, topicId)
+      if (type === 'exam')      await generateExam(projectId, topicId)
+      setMaterials(prev => ({ ...prev, [type]: { status: 'generating' } }))
     }
 
-    // Optimistically show generating status
-    setMaterials(prev => ({
-      ...prev,
-      [type === 'all' ? 'notes' : type]: { status: 'generating' }
-    }))
-
-    // Reload after short delay
     setTimeout(loadData, 2000)
+  }
   }
 
   const handleDownload = (type) => {
