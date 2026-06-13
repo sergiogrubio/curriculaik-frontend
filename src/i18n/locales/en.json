@@ -28,11 +28,11 @@
     "next": "Next"
   },
   "upload": {
-    "curriculum": "Upload Teaching Programme",
+    "curriculum": "Upload teaching programme",
     "curriculum_hint": "Upload your teaching programme (.docx or .pdf)",
-    "regulation": "Upload Official Regulation",
+    "regulation": "Upload official regulation",
     "regulation_hint": "Upload the official BOE/BOIB regulation (.pdf)",
-    "sources": "Upload Source Materials",
+    "sources": "Upload source materials",
     "sources_hint": "Upload a ZIP file with your existing materials (notes, slides, books...)",
     "drop_here": "Drop files here or click to browse",
     "processing": "Processing..."
