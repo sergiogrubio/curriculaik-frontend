@@ -63,6 +63,26 @@ function Input({ label, value, onChange, placeholder, required }) {
   )
 }
 
+function ProgressSteps({ steps }) {
+  const { theme } = useTheme()
+  return (
+    <div className="space-y-3 py-2">
+      {steps.map((s, i) => (
+        <div key={i} className="flex items-center gap-3">
+          <div className="w-5 text-center flex-shrink-0">
+            {s.status === 'done'    && <span style={{ color: '#66BB6A' }}>✓</span>}
+            {s.status === 'active'  && <span className="inline-block animate-spin" style={{ color: theme.primary }}>⟳</span>}
+            {s.status === 'pending' && <span style={{ color: theme.border }}>○</span>}
+          </div>
+          <span className="text-sm" style={{ color: s.status === 'pending' ? theme.textSecondary : theme.text }}>
+            {s.label}
+          </span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function NewProjectPage() {
   const { t } = useTranslation()
   const { theme } = useTheme()
@@ -76,7 +96,7 @@ export default function NewProjectPage() {
   const [programmeFile,  setProgrammeFile]  = useState(null)
   const [sourcesFile,    setSourcesFile]    = useState(null)
   const [loading,  setLoading]  = useState(false)
-  const [step,     setStep]     = useState('')
+  const [steps,    setSteps]    = useState([])
   const [error,    setError]    = useState(null)
 
   const canSubmit = form.name && form.module_code && (regulationFile || programmeFile)
@@ -89,41 +109,59 @@ export default function NewProjectPage() {
 
   const handleSubmit = async () => {
     if (!canSubmit) return
-    setLoading(true)
     setError(null)
 
-    try {
-      const projectId = generateId(form.name)
+    const projectId = generateId(form.name)
 
-      setStep('Creating project...')
+    const stepDefs = [
+      { label: 'Creating project' },
+      regulationFile && { label: 'Uploading regulation' },
+      programmeFile  && { label: 'Uploading programme' },
+      sourcesFile    && { label: 'Uploading source materials' },
+      { label: 'Parsing curriculum' },
+      sourcesFile    && { label: 'Ingesting source materials' },
+    ].filter(Boolean).map(s => ({ ...s, status: 'pending' }))
+
+    setSteps(stepDefs)
+    setLoading(true)
+
+    const mark = (label, status) =>
+      setSteps(prev => prev.map(s => s.label === label ? { ...s, status } : s))
+
+    try {
+      mark('Creating project', 'active')
       await createProject({ id: projectId, ...form })
+      mark('Creating project', 'done')
 
       if (regulationFile) {
-        setStep('Uploading regulation...')
+        mark('Uploading regulation', 'active')
         await uploadRegulation(projectId, regulationFile)
+        mark('Uploading regulation', 'done')
       }
       if (programmeFile) {
-        setStep('Uploading teaching programme...')
+        mark('Uploading programme', 'active')
         await uploadProgramme(projectId, programmeFile)
+        mark('Uploading programme', 'done')
       }
       if (sourcesFile) {
-        setStep('Uploading source materials...')
+        mark('Uploading source materials', 'active')
         await uploadSources(projectId, sourcesFile)
+        mark('Uploading source materials', 'done')
       }
 
-      setStep('Parsing curriculum...')
-      await parseCurriculum(projectId)
+      mark('Parsing curriculum', 'active')
+      if (sourcesFile) mark('Ingesting source materials', 'active')
 
-      if (sourcesFile) {
-        setStep('Ingesting source materials...')
-        await ingestSources(projectId)
-      }
+      // Fire parse + ingest in background; navigate immediately
+      parseCurriculum(projectId)
+        .then(() => sourcesFile ? ingestSources(projectId) : null)
+        .catch(err => console.error('Background processing error:', err))
 
-      navigate(`/projects/${projectId}`)
+      navigate(`/projects/${projectId}`, { state: { processing: true } })
     } catch (err) {
       setError(err.response?.data?.detail || err.message)
       setLoading(false)
-      setStep('')
+      setSteps([])
     }
   }
 
@@ -226,6 +264,13 @@ export default function NewProjectPage() {
           />
         </div>
 
+        {loading && steps.length > 0 && (
+          <>
+            <hr style={{ borderColor: theme.border }} />
+            <ProgressSteps steps={steps} />
+          </>
+        )}
+
         {error && (
           <p className="text-xs px-3 py-2 rounded-lg"
              style={{ backgroundColor: '#EF535022', color: '#EF5350' }}>
@@ -233,26 +278,23 @@ export default function NewProjectPage() {
           </p>
         )}
 
-        <hr style={{ borderColor: theme.border }} />
-
-        <div className="flex gap-3 justify-end items-center">
-          {loading && step && (
-            <p className="text-xs flex-1" style={{ color: theme.textSecondary }}>
-              ⏳ {step}
-            </p>
-          )}
-          <button onClick={() => navigate('/')}
-                  disabled={loading}
-                  className="px-4 py-2 rounded-lg text-sm font-medium border disabled:opacity-40"
-                  style={{ borderColor: theme.border, color: theme.textSecondary }}>
-            {t('actions.cancel')}
-          </button>
-          <button onClick={handleSubmit} disabled={loading || !canSubmit}
-                  className="px-6 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-40"
-                  style={{ backgroundColor: theme.primary, color: '#fff' }}>
-            {loading ? step || '...' : 'Create project'}
-          </button>
-        </div>
+        {!loading && (
+          <>
+            <hr style={{ borderColor: theme.border }} />
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => navigate('/')}
+                      className="px-4 py-2 rounded-lg text-sm font-medium border"
+                      style={{ borderColor: theme.border, color: theme.textSecondary }}>
+                {t('actions.cancel')}
+              </button>
+              <button onClick={handleSubmit} disabled={!canSubmit}
+                      className="px-6 py-2 rounded-lg text-sm font-medium transition-opacity hover:opacity-90 disabled:opacity-40"
+                      style={{ backgroundColor: theme.primary, color: '#fff' }}>
+                Create project
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

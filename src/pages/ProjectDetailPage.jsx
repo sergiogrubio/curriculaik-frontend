@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useTheme } from '../context/ThemeContext.jsx'
 import { getProject, getTopics, generateComplianceReport, downloadComplianceReport, deleteProject } from '../services/api.js'
@@ -67,11 +67,13 @@ export default function ProjectDetailPage() {
   const { theme } = useTheme()
   const { projectId } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const [activeTab, setActiveTab] = useState('topics')
   const [project, setProject] = useState(null)
   const [topics, setTopics] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [processing, setProcessing] = useState(!!location.state?.processing)
 
   useEffect(() => {
     Promise.all([getProject(projectId), getTopics(projectId)])
@@ -79,12 +81,27 @@ export default function ProjectDetailPage() {
         setProject(proj)
         setTopics(tops)
         setLoading(false)
+        if (tops.length > 0) setProcessing(false)
       })
       .catch(err => {
         setError(err.message)
         setLoading(false)
       })
   }, [projectId])
+
+  useEffect(() => {
+    if (!processing) return
+    const id = setInterval(async () => {
+      try {
+        const tops = await getTopics(projectId)
+        if (tops.length > 0) {
+          setTopics(tops)
+          setProcessing(false)
+        }
+      } catch {}
+    }, 5000)
+    return () => clearInterval(id)
+  }, [processing, projectId])
 
   if (loading) return (
     <div className="text-center py-20" style={{ color: theme.textSecondary }}>
@@ -107,6 +124,15 @@ export default function ProjectDetailPage() {
 
   return (
     <div>
+      {/* Processing banner */}
+      {processing && (
+        <div className="mb-6 px-4 py-3 rounded-lg flex items-center gap-3"
+             style={{ backgroundColor: `${theme.primary}22`, color: theme.primary }}>
+          <span className="inline-block animate-spin text-lg">⟳</span>
+          <span className="text-sm font-medium">Processing curriculum… this may take a few minutes.</span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
@@ -143,7 +169,7 @@ export default function ProjectDetailPage() {
 
       {/* Tabs */}
       <div className="flex gap-4 mb-6 border-b" style={{ borderColor: theme.border }}>
-        {['topics', 'sources', 'settings'].map(tab => (
+        {['topics', 'settings'].map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)}
                   className="pb-3 text-sm font-medium capitalize transition-colors"
                   style={{
@@ -162,14 +188,9 @@ export default function ProjectDetailPage() {
             <div className="text-center py-12" style={{ color: theme.textSecondary }}>
               <p className="text-4xl mb-3">📋</p>
               <p className="font-medium mb-1" style={{ color: theme.text }}>No topics yet</p>
-              <p className="text-sm mb-4">Upload your curriculum files and parse them</p>
-              <button
-                onClick={() => setActiveTab('sources')}
-                className="px-4 py-2 rounded-lg text-sm font-medium"
-                style={{ backgroundColor: theme.primary, color: '#fff' }}
-              >
-                Upload files
-              </button>
+              <p className="text-sm" style={{ color: theme.textSecondary }}>
+                Topics will appear here once the curriculum has been processed.
+              </p>
             </div>
           ) : (
             <>
@@ -201,27 +222,6 @@ export default function ProjectDetailPage() {
               )}
             </>
           )}
-        </div>
-      )}
-
-      {/* Sources tab */}
-      {activeTab === 'sources' && (
-        <div className="space-y-4">
-          <div className="p-6 rounded-xl border text-center"
-               style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
-            <p className="text-4xl mb-3">📦</p>
-            <p className="font-medium mb-1" style={{ color: theme.text }}>
-              {t('upload.sources')}
-            </p>
-            <p className="text-sm mb-4" style={{ color: theme.textSecondary }}>
-              {t('upload.sources_hint')}
-            </p>
-            <label className="inline-block px-4 py-2 rounded-lg text-sm font-medium cursor-pointer"
-                   style={{ backgroundColor: theme.primary, color: '#fff' }}>
-              <input type="file" accept=".zip" className="hidden" />
-              {t('upload.sources')}
-            </label>
-          </div>
         </div>
       )}
 
