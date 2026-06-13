@@ -104,6 +104,9 @@ export const updateTopicContext = (projectId, topicId, context) =>
 export const getCostSummary = (projectId) =>
   API.get(`/api/projects/${projectId}/cost`).then(r => r.data)
 
+export const getComplianceStatus = (projectId) =>
+  API.get(`/api/projects/${projectId}/compliance/status`).then(r => r.data)
+
 export const generateComplianceReport = (projectId) =>
   API.post(`/api/projects/${projectId}/compliance`).then(r => r.data)
 

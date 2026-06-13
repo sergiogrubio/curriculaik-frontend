@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTheme } from '../context/ThemeContext.jsx'
-import { getProject, getTopics, updateProject, getSourcesStatus, uploadSources, ingestSources, generateComplianceReport, downloadComplianceReport, deleteProject } from '../services/api.js'
+import { getProject, getTopics, updateProject, getSourcesStatus, uploadSources, ingestSources, getComplianceStatus, generateComplianceReport, downloadComplianceReport, deleteProject } from '../services/api.js'
 
 function TopicRow({ topic, projectId }) {
   const { theme } = useTheme()
@@ -78,17 +78,20 @@ export default function ProjectDetailPage() {
   const [uploadError, setUploadError] = useState(null)
   const [projectContext, setProjectContext] = useState('')
   const [contextSaved, setContextSaved] = useState(false)
+  const [complianceStatus, setComplianceStatus] = useState(null)
+  const [complianceGenerating, setComplianceGenerating] = useState(false)
 
   // Derived — true while the curriculum parse hasn't produced any topics yet
   const isProcessing = !loading && topics.length === 0
 
   useEffect(() => {
-    Promise.all([getProject(projectId), getTopics(projectId), getSourcesStatus(projectId)])
-      .then(([proj, tops, srcStatus]) => {
+    Promise.all([getProject(projectId), getTopics(projectId), getSourcesStatus(projectId), getComplianceStatus(projectId)])
+      .then(([proj, tops, srcStatus, compStatus]) => {
         setProject(proj)
         setProjectContext(proj.context || '')
         setTopics(tops)
         setSourcesStatus(srcStatus)
+        setComplianceStatus(compStatus)
         setLoading(false)
       })
       .catch(err => {
@@ -126,6 +129,24 @@ export default function ProjectDetailPage() {
     return () => clearInterval(id)
   }, [ingesting, projectId])
 
+  // Poll compliance status every 5 s while generating
+  useEffect(() => {
+    if (!complianceGenerating) return
+    const id = setInterval(async () => {
+      try {
+        const status = await getComplianceStatus(projectId)
+        setComplianceStatus(status)
+        if (status.exists) {
+          setComplianceGenerating(false)
+          // Refresh project to get updated compliance_score
+          const proj = await getProject(projectId)
+          setProject(proj)
+        }
+      } catch {}
+    }, 5000)
+    return () => clearInterval(id)
+  }, [complianceGenerating, projectId])
+
   if (loading) return (
     <div className="text-center py-20" style={{ color: theme.textSecondary }}>
       <p className="text-4xl mb-4">⏳</p>
@@ -162,9 +183,30 @@ export default function ProjectDetailPage() {
           <Link to="/" className="text-xs mb-2 block" style={{ color: theme.textSecondary }}>
             ← {t('nav.projects')}
           </Link>
-          <h1 className="text-3xl font-bold" style={{ color: theme.text }}>
-            {project.name}
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold" style={{ color: theme.text }}>
+              {project.name}
+            </h1>
+            {project.compliance_score != null && (
+              <span
+                className="text-sm font-bold px-2 py-0.5 rounded-full"
+                style={{
+                  backgroundColor: project.compliance_score >= 80
+                    ? '#66BB6A22'
+                    : project.compliance_score >= 60
+                    ? '#FFA72622'
+                    : '#EF535022',
+                  color: project.compliance_score >= 80
+                    ? '#66BB6A'
+                    : project.compliance_score >= 60
+                    ? '#FFA726'
+                    : '#EF5350',
+                }}
+              >
+                {project.compliance_score}%
+              </span>
+            )}
+          </div>
           <p className="mt-1 text-sm" style={{ color: theme.textSecondary }}>
             {project.course} · {project.language}
             {project.institution && ` · ${project.institution}`}
@@ -454,33 +496,88 @@ export default function ProjectDetailPage() {
           </Link>
           {/* Compliance report */}
           <div
-            className="flex items-center justify-between p-5 rounded-xl border"
+            className="p-5 rounded-xl border"
             style={{ backgroundColor: theme.surface, borderColor: theme.border }}
           >
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">📋</span>
-              <div>
-                <p className="font-medium text-sm" style={{ color: theme.text }}>Compliance report</p>
-                <p className="text-xs" style={{ color: theme.textSecondary }}>
-                  Checks that the teaching programme covers the official regulation
-                </p>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">📋</span>
+                <div>
+                  <p className="font-medium text-sm" style={{ color: theme.text }}>Compliance report</p>
+                  <p className="text-xs" style={{ color: theme.textSecondary }}>
+                    Checks that the teaching programme covers the official regulation
+                  </p>
+                  {complianceStatus?.exists && !complianceGenerating && (
+                    <div className="flex items-center gap-2 mt-1">
+                      {complianceStatus.compliance_score != null && (
+                        <span
+                          className="text-xs font-bold px-2 py-0.5 rounded-full"
+                          style={{
+                            backgroundColor: complianceStatus.compliance_score >= 80
+                              ? '#66BB6A22'
+                              : complianceStatus.compliance_score >= 60
+                              ? '#FFA72622'
+                              : '#EF535022',
+                            color: complianceStatus.compliance_score >= 80
+                              ? '#66BB6A'
+                              : complianceStatus.compliance_score >= 60
+                              ? '#FFA726'
+                              : '#EF5350',
+                          }}
+                        >
+                          {complianceStatus.compliance_score}/100
+                        </span>
+                      )}
+                      {complianceStatus.generated_at && (
+                        <span className="text-xs" style={{ color: theme.textSecondary }}>
+                          Last generated {new Date(complianceStatus.generated_at).toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {!complianceStatus?.exists && !complianceGenerating && (
+                    <p className="text-xs mt-1" style={{ color: theme.textSecondary }}>
+                      Not generated yet
+                    </p>
+                  )}
+                  {complianceGenerating && (
+                    <p className="text-xs mt-1 flex items-center gap-1" style={{ color: theme.primary }}>
+                      <span className="inline-block animate-spin">⟳</span>
+                      Generating compliance report…
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => downloadComplianceReport(projectId)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium border"
-                style={{ borderColor: theme.primary, color: theme.primary }}
-              >
-                ↓ Download
-              </button>
-              <button
-                onClick={() => generateComplianceReport(projectId)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium"
-                style={{ backgroundColor: theme.primary, color: '#fff' }}
-              >
-                ⚡ Generate
-              </button>
+              <div className="flex gap-2 flex-shrink-0">
+                {complianceStatus?.exists && !complianceGenerating && (
+                  <button
+                    onClick={() => downloadComplianceReport(projectId)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium border"
+                    style={{ borderColor: theme.primary, color: theme.primary }}
+                  >
+                    ↓ Download
+                  </button>
+                )}
+                <button
+                  disabled={complianceGenerating}
+                  onClick={async () => {
+                    setComplianceGenerating(true)
+                    try {
+                      await generateComplianceReport(projectId)
+                    } catch {
+                      setComplianceGenerating(false)
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-medium"
+                  style={{
+                    backgroundColor: complianceGenerating ? theme.border : theme.primary,
+                    color: complianceGenerating ? theme.textSecondary : '#fff',
+                    cursor: complianceGenerating ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {complianceStatus?.exists ? '↺ Regenerate' : '⚡ Generate'}
+                </button>
+              </div>
             </div>
           </div>
 
