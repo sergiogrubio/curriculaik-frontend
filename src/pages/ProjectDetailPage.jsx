@@ -99,9 +99,10 @@ export default function ProjectDetailPage() {
         setTopics(tops)
         setSourcesStatus(srcStatus)
         setComplianceStatus(compStatus)
-        // If ingestion is already running when the page loads, start polling
-        if (progress?.status === 'running') {
-          setIngestProgress(progress)
+        // Start polling if indexing is happening (has_pending covers the window
+        // before the first progress file write; running covers page refreshes)
+        if (srcStatus?.has_pending || progress?.status === 'running') {
+          if (progress?.status === 'running') setIngestProgress(progress)
           setIngesting(true)
         }
         setLoading(false)
