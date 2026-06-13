@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useTheme } from '../context/ThemeContext.jsx'
-import { getProject, getTopics } from '../services/api.js'
+import { getProject, getTopics, generateComplianceReport, downloadComplianceReport } from '../services/api.js'
 
 function TopicRow({ topic, projectId }) {
   const { theme } = useTheme()
@@ -244,6 +244,38 @@ export default function ProjectDetailPage() {
             </div>
             <span style={{ color: theme.textSecondary }}>→</span>
           </Link>
+          {/* Compliance report */}
+          <div
+            className="flex items-center justify-between p-5 rounded-xl border"
+            style={{ backgroundColor: theme.surface, borderColor: theme.border }}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">📋</span>
+              <div>
+                <p className="font-medium text-sm" style={{ color: theme.text }}>Compliance report</p>
+                <p className="text-xs" style={{ color: theme.textSecondary }}>
+                  Checks that the teaching programme covers the official regulation
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => downloadComplianceReport(projectId)}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border"
+                style={{ borderColor: theme.primary, color: theme.primary }}
+              >
+                ↓ Download
+              </button>
+              <button
+                onClick={() => generateComplianceReport(projectId)}
+                className="px-3 py-1.5 rounded-lg text-xs font-medium"
+                style={{ backgroundColor: theme.primary, color: '#fff' }}
+              >
+                ⚡ Generate
+              </button>
+            </div>
+          </div>
+
           <Link
             to={`/projects/${projectId}/cost`}
             className="flex items-center justify-between p-5 rounded-xl border transition-all hover:scale-[1.01]"

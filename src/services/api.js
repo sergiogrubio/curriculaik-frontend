@@ -95,3 +95,11 @@ export const generateExam = (projectId, topicId) =>
 // ─── Costs ────────────────────────────────────────────────────────────────────
 export const getCostSummary = (projectId) =>
   API.get(`/api/projects/${projectId}/cost`).then(r => r.data)
+
+export const generateComplianceReport = (projectId) =>
+  API.post(`/api/projects/${projectId}/compliance`).then(r => r.data)
+
+export const downloadComplianceReport = (projectId) => {
+  const url = `${API.defaults.baseURL}/api/projects/${projectId}/compliance/download`
+  window.open(url, '_blank')
+}
