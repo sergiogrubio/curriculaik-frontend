@@ -3,6 +3,9 @@ import { useTheme } from '../../context/ThemeContext.jsx'
 import { useExchangeRate } from '../../hooks/useExchangeRate.js'
 import { useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { getCostSummary } from '../../services/api.js'
+
+const ZERO = { session: 0, project_total: 0, tokens_in: 0, tokens_out: 0 }
 
 export default function CostBar() {
   const { t } = useTranslation()
@@ -10,21 +13,32 @@ export default function CostBar() {
   const { convert, loading } = useExchangeRate()
   const location = useLocation()
 
-  const [cost, setCost] = useState({
-    session: 0.00,
-    project_total: 0.00,
-    tokens_in: 0,
-    tokens_out: 0
-  })
+  const [cost, setCost] = useState(ZERO)
 
-  // Detect if we are inside a project
   const projectMatch = location.pathname.match(/^\/projects\/([^/]+)/)
-  const insideProject = projectMatch !== null
+  const projectId = projectMatch ? projectMatch[1] : null
 
   useEffect(() => {
-    const stored = localStorage.getItem('session_cost')
-    if (stored) setCost(JSON.parse(stored))
-  }, [])
+    if (!projectId) {
+      setCost(ZERO)
+      return
+    }
+
+    const fetchCost = () => {
+      getCostSummary(projectId)
+        .then(data => setCost({
+          session: data.total_usd,
+          project_total: data.total_usd,
+          tokens_in: data.tokens_in,
+          tokens_out: data.tokens_out
+        }))
+        .catch(() => {})
+    }
+
+    fetchCost()
+    const interval = setInterval(fetchCost, 10_000)
+    return () => clearInterval(interval)
+  }, [projectId])
 
   const fmt = (val) =>
     loading ? '...' : `${currency.symbol}${convert(val, currency.code).toFixed(4)} ${currency.code}`
@@ -49,7 +63,7 @@ export default function CostBar() {
           {fmt(cost.session)}
         </strong>
       </span>
-      {insideProject && (
+      {projectId && (
         <span style={{ color: theme.textSecondary }}>
           {t('cost.project_total')}: <strong style={{ color: theme.secondary }}>
             {fmt(cost.project_total)}
