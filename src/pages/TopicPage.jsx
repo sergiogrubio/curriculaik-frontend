@@ -35,8 +35,11 @@ function MaterialCard({ type, material, onGenerate, onDownload }) {
             {t(`materials.${type}`)}
           </span>
         </div>
-        <span className="text-xs px-2 py-1 rounded-full font-medium"
+        <span className="text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1"
               style={{ backgroundColor: sc.bg, color: sc.text }}>
+          {material?.status === 'generating' && (
+            <span className="inline-block animate-spin">⟳</span>
+          )}
           {material?.status || 'pending'}
         </span>
       </div>
@@ -60,7 +63,10 @@ function MaterialCard({ type, material, onGenerate, onDownload }) {
           style={{ backgroundColor: theme.primary, color: '#fff' }}
         >
           {material?.status === 'generating'
-            ? t('materials.generating')
+            ? <span className="flex items-center justify-center gap-2">
+                <span className="inline-block animate-spin">⟳</span>
+                {t('materials.generating')}
+              </span>
             : material?.status === 'complete'
               ? '↺ Regenerate'
               : `⚡ ${t('actions.generate')}`}
