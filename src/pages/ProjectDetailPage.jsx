@@ -86,13 +86,24 @@ export default function ProjectDetailPage() {
   const isProcessing = !loading && topics.length === 0
 
   useEffect(() => {
-    Promise.all([getProject(projectId), getTopics(projectId), getSourcesStatus(projectId), getComplianceStatus(projectId)])
-      .then(([proj, tops, srcStatus, compStatus]) => {
+    Promise.all([
+      getProject(projectId),
+      getTopics(projectId),
+      getSourcesStatus(projectId),
+      getComplianceStatus(projectId),
+      getIngestProgress(projectId),
+    ])
+      .then(([proj, tops, srcStatus, compStatus, progress]) => {
         setProject(proj)
         setProjectContext(proj.context || '')
         setTopics(tops)
         setSourcesStatus(srcStatus)
         setComplianceStatus(compStatus)
+        // If ingestion is already running when the page loads, start polling
+        if (progress?.status === 'running') {
+          setIngestProgress(progress)
+          setIngesting(true)
+        }
         setLoading(false)
       })
       .catch(err => {
