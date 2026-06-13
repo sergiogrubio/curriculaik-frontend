@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useTheme } from '../context/ThemeContext.jsx'
-import { getProject, getTopics, generateComplianceReport, downloadComplianceReport } from '../services/api.js'
+import { getProject, getTopics, generateComplianceReport, downloadComplianceReport, deleteProject } from '../services/api.js'
 
 function TopicRow({ topic, projectId }) {
   const { theme } = useTheme()
@@ -292,6 +292,28 @@ export default function ProjectDetailPage() {
             </div>
             <span style={{ color: theme.textSecondary }}>→</span>
           </Link>
+
+          {/* Danger zone */}
+          <div className="p-5 rounded-xl border"
+               style={{ backgroundColor: theme.surface, borderColor: '#EF5350' }}>
+            <h3 className="font-semibold text-sm mb-1" style={{ color: '#EF5350' }}>
+              Danger zone
+            </h3>
+            <p className="text-xs mb-4" style={{ color: theme.textSecondary }}>
+              Permanently deletes the project, all topics, materials and local files. This cannot be undone.
+            </p>
+            <button
+              onClick={async () => {
+                if (!window.confirm(`Delete project "${project?.name}"? This cannot be undone.`)) return
+                await deleteProject(projectId)
+                navigate('/')
+              }}
+              className="px-4 py-2 rounded-lg text-sm font-medium"
+              style={{ backgroundColor: '#EF5350', color: '#fff' }}
+            >
+              🗑 Delete project
+            </button>
+          </div>
         </div>
       )}
     </div>
