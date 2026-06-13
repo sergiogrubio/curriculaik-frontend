@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useTheme } from '../context/ThemeContext.jsx'
-import { getProject, getTopics, updateProject, generateComplianceReport, downloadComplianceReport, deleteProject } from '../services/api.js'
+import { getProject, getTopics, updateProject, getSourcesStatus, generateComplianceReport, downloadComplianceReport, deleteProject } from '../services/api.js'
 
 function TopicRow({ topic, projectId }) {
   const { theme } = useTheme()
@@ -73,18 +73,21 @@ export default function ProjectDetailPage() {
   const [topics, setTopics] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [processing, setProcessing] = useState(!!location.state?.processing)
+  const [sourcesStatus, setSourcesStatus] = useState(null)
   const [projectContext, setProjectContext] = useState('')
   const [contextSaved, setContextSaved] = useState(false)
 
+  // Derived — true while the curriculum parse hasn't produced any topics yet
+  const isProcessing = !loading && topics.length === 0
+
   useEffect(() => {
-    Promise.all([getProject(projectId), getTopics(projectId)])
-      .then(([proj, tops]) => {
+    Promise.all([getProject(projectId), getTopics(projectId), getSourcesStatus(projectId)])
+      .then(([proj, tops, srcStatus]) => {
         setProject(proj)
         setProjectContext(proj.context || '')
         setTopics(tops)
+        setSourcesStatus(srcStatus)
         setLoading(false)
-        if (tops.length > 0) setProcessing(false)
       })
       .catch(err => {
         setError(err.message)
@@ -92,19 +95,17 @@ export default function ProjectDetailPage() {
       })
   }, [projectId])
 
+  // Poll topics every 5 s until they appear
   useEffect(() => {
-    if (!processing) return
+    if (!isProcessing) return
     const id = setInterval(async () => {
       try {
         const tops = await getTopics(projectId)
-        if (tops.length > 0) {
-          setTopics(tops)
-          setProcessing(false)
-        }
+        if (tops.length > 0) setTopics(tops)
       } catch {}
     }, 5000)
     return () => clearInterval(id)
-  }, [processing, projectId])
+  }, [isProcessing, projectId])
 
   if (loading) return (
     <div className="text-center py-20" style={{ color: theme.textSecondary }}>
@@ -128,11 +129,11 @@ export default function ProjectDetailPage() {
   return (
     <div>
       {/* Processing banner */}
-      {processing && (
+      {isProcessing && (
         <div className="mb-6 px-4 py-3 rounded-lg flex items-center gap-3"
              style={{ backgroundColor: `${theme.primary}22`, color: theme.primary }}>
           <span className="inline-block animate-spin text-lg">⟳</span>
-          <span className="text-sm font-medium">Processing curriculum… this may take a few minutes.</span>
+          <span className="text-sm font-medium">Curriculum is being processed… this may take a few minutes.</span>
         </div>
       )}
 
@@ -187,12 +188,32 @@ export default function ProjectDetailPage() {
       {/* Topics tab */}
       {activeTab === 'topics' && (
         <div className="space-y-6">
+          {/* Sources status indicator */}
+          {sourcesStatus && (
+            <div className="flex items-center gap-2">
+              {sourcesStatus.chunk_count > 0 ? (
+                <span className="text-xs px-3 py-1 rounded-full"
+                      style={{ backgroundColor: `${theme.secondary}22`, color: theme.secondary }}>
+                  ● {sourcesStatus.chunk_count.toLocaleString()} source chunks indexed
+                </span>
+              ) : sourcesStatus.files_processed > 0 && !sourcesStatus.ingested ? (
+                <span className="text-xs px-3 py-1 rounded-full flex items-center gap-1"
+                      style={{ backgroundColor: `${theme.primary}22`, color: theme.primary }}>
+                  <span className="inline-block animate-spin">⟳</span>
+                  Indexing source materials…
+                </span>
+              ) : null}
+            </div>
+          )}
+
           {topics.length === 0 ? (
             <div className="text-center py-12" style={{ color: theme.textSecondary }}>
-              <p className="text-4xl mb-3">📋</p>
-              <p className="font-medium mb-1" style={{ color: theme.text }}>No topics yet</p>
-              <p className="text-sm" style={{ color: theme.textSecondary }}>
-                Topics will appear here once the curriculum has been processed.
+              <p className="text-4xl mb-3">⏳</p>
+              <p className="font-medium mb-1" style={{ color: theme.text }}>
+                Curriculum is being processed...
+              </p>
+              <p className="text-sm">
+                Topics will appear here automatically once parsing completes.
               </p>
             </div>
           ) : (

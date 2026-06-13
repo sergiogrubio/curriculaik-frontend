@@ -73,8 +73,13 @@ function ProgressSteps({ steps }) {
             {s.status === 'done'    && <span style={{ color: '#66BB6A' }}>✓</span>}
             {s.status === 'active'  && <span className="inline-block animate-spin" style={{ color: theme.primary }}>⟳</span>}
             {s.status === 'pending' && <span style={{ color: theme.border }}>○</span>}
+            {s.status === 'error'   && <span style={{ color: '#EF5350' }}>✕</span>}
           </div>
-          <span className="text-sm" style={{ color: s.status === 'pending' ? theme.textSecondary : theme.text }}>
+          <span className="text-sm" style={{
+            color: s.status === 'pending' ? theme.textSecondary
+                 : s.status === 'error'   ? '#EF5350'
+                 : theme.text
+          }}>
             {s.label}
           </span>
         </div>
@@ -116,10 +121,10 @@ export default function NewProjectPage() {
     const stepDefs = [
       { label: 'Creating project' },
       regulationFile && { label: 'Uploading regulation' },
-      programmeFile  && { label: 'Uploading programme' },
+      programmeFile  && { label: 'Uploading teaching programme' },
       sourcesFile    && { label: 'Uploading source materials' },
       { label: 'Parsing curriculum' },
-      sourcesFile    && { label: 'Ingesting source materials' },
+      sourcesFile    && { label: 'Ingesting materials' },
     ].filter(Boolean).map(s => ({ ...s, status: 'pending' }))
 
     setSteps(stepDefs)
@@ -128,40 +133,34 @@ export default function NewProjectPage() {
     const mark = (label, status) =>
       setSteps(prev => prev.map(s => s.label === label ? { ...s, status } : s))
 
+    // Run a step: mark active → await → mark done, or mark error and re-throw
+    const run = async (label, fn) => {
+      mark(label, 'active')
+      try {
+        await fn()
+        mark(label, 'done')
+      } catch (err) {
+        mark(label, 'error')
+        throw err
+      }
+    }
+
     try {
-      mark('Creating project', 'active')
-      await createProject({ id: projectId, ...form })
-      mark('Creating project', 'done')
+      await run('Creating project',             () => createProject({ id: projectId, ...form }))
+      if (regulationFile) await run('Uploading regulation',          () => uploadRegulation(projectId, regulationFile))
+      if (programmeFile)  await run('Uploading teaching programme',  () => uploadProgramme(projectId, programmeFile))
+      if (sourcesFile)    await run('Uploading source materials',    () => uploadSources(projectId, sourcesFile))
 
-      if (regulationFile) {
-        mark('Uploading regulation', 'active')
-        await uploadRegulation(projectId, regulationFile)
-        mark('Uploading regulation', 'done')
-      }
-      if (programmeFile) {
-        mark('Uploading programme', 'active')
-        await uploadProgramme(projectId, programmeFile)
-        mark('Uploading programme', 'done')
-      }
-      if (sourcesFile) {
-        mark('Uploading source materials', 'active')
-        await uploadSources(projectId, sourcesFile)
-        mark('Uploading source materials', 'done')
-      }
+      // parseCurriculum / ingestSources fire background tasks and return immediately
+      await run('Parsing curriculum', () => parseCurriculum(projectId))
+      if (sourcesFile) await run('Ingesting materials', () => ingestSources(projectId))
 
-      mark('Parsing curriculum', 'active')
-      if (sourcesFile) mark('Ingesting source materials', 'active')
-
-      // Fire parse + ingest in background; navigate immediately
-      parseCurriculum(projectId)
-        .then(() => sourcesFile ? ingestSources(projectId) : null)
-        .catch(err => console.error('Background processing error:', err))
-
-      navigate(`/projects/${projectId}`, { state: { processing: true } })
+      // Brief pause so the user sees all steps green before navigating
+      await new Promise(r => setTimeout(r, 600))
+      navigate(`/projects/${projectId}`)
     } catch (err) {
       setError(err.response?.data?.detail || err.message)
       setLoading(false)
-      setSteps([])
     }
   }
 
