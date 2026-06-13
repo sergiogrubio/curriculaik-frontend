@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useTheme } from '../context/ThemeContext.jsx'
-import { getProject, getTopics, generateComplianceReport, downloadComplianceReport, deleteProject } from '../services/api.js'
+import { getProject, getTopics, updateProject, generateComplianceReport, downloadComplianceReport, deleteProject } from '../services/api.js'
 
 function TopicRow({ topic, projectId }) {
   const { theme } = useTheme()
@@ -74,11 +74,14 @@ export default function ProjectDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [processing, setProcessing] = useState(!!location.state?.processing)
+  const [projectContext, setProjectContext] = useState('')
+  const [contextSaved, setContextSaved] = useState(false)
 
   useEffect(() => {
     Promise.all([getProject(projectId), getTopics(projectId)])
       .then(([proj, tops]) => {
         setProject(proj)
+        setProjectContext(proj.context || '')
         setTopics(tops)
         setLoading(false)
         if (tops.length > 0) setProcessing(false)
@@ -228,6 +231,43 @@ export default function ProjectDetailPage() {
       {/* Settings tab */}
       {activeTab === 'settings' && (
         <div className="space-y-4">
+          {/* Project context */}
+          <div className="p-5 rounded-xl border"
+               style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="text-2xl">📝</span>
+              <div>
+                <p className="font-medium text-sm" style={{ color: theme.text }}>Additional context</p>
+                <p className="text-xs" style={{ color: theme.textSecondary }}>
+                  Global instructions applied to all material generation for this project
+                </p>
+              </div>
+            </div>
+            <textarea
+              value={projectContext}
+              onChange={e => { setProjectContext(e.target.value); setContextSaved(false) }}
+              placeholder="e.g. Always use real-world industry examples. Students are working professionals with 2+ years experience."
+              rows={4}
+              className="w-full px-3 py-2 rounded-lg border text-sm outline-none resize-none mb-3"
+              style={{ backgroundColor: theme.bg, borderColor: theme.border, color: theme.text }}
+            />
+            <div className="flex items-center justify-between">
+              {contextSaved && (
+                <span className="text-xs" style={{ color: '#66BB6A' }}>Saved</span>
+              )}
+              <button
+                onClick={async () => {
+                  await updateProject(projectId, { context: projectContext })
+                  setContextSaved(true)
+                }}
+                className="ml-auto px-4 py-1.5 rounded-lg text-xs font-medium"
+                style={{ backgroundColor: theme.primary, color: '#fff' }}
+              >
+                Save context
+              </button>
+            </div>
+          </div>
+
           <Link
             to={`/projects/${projectId}/style`}
             className="flex items-center justify-between p-5 rounded-xl border transition-all hover:scale-[1.01]"

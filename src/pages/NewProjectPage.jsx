@@ -90,7 +90,7 @@ export default function NewProjectPage() {
 
   const [form, setForm] = useState({
     name: '', subject: '', course: '',
-    institution: '', language: 'English', module_code: ''
+    institution: '', language: 'English', module_code: '', context: ''
   })
   const [regulationFile, setRegulationFile] = useState(null)
   const [programmeFile,  setProgrammeFile]  = useState(null)
@@ -261,6 +261,27 @@ export default function NewProjectPage() {
             onFile={setSourcesFile}
             file={sourcesFile}
             optional
+          />
+        </div>
+
+        <hr style={{ borderColor: theme.border }} />
+
+        {/* Additional context */}
+        <div>
+          <label className="block text-sm font-medium mb-1" style={{ color: theme.text }}>
+            Additional context
+            <span className="ml-2 text-xs font-normal" style={{ color: theme.textSecondary }}>(optional)</span>
+          </label>
+          <p className="text-xs mb-2" style={{ color: theme.textSecondary }}>
+            Global instructions applied to all material generation — teaching style, audience notes, specific requirements, etc.
+          </p>
+          <textarea
+            value={form.context}
+            onChange={e => setForm({ ...form, context: e.target.value })}
+            placeholder="e.g. Always use real-world industry examples. Students are working professionals with 2+ years experience."
+            rows={3}
+            className="w-full px-3 py-2 rounded-lg border text-sm outline-none resize-none"
+            style={{ backgroundColor: theme.bg, borderColor: theme.border, color: theme.text }}
           />
         </div>
 

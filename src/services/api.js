@@ -92,6 +92,10 @@ export const generateExercises = (projectId, topicId) =>
 export const generateExam = (projectId, topicId) =>
   API.post(`/api/projects/${projectId}/topics/${topicId}/generate/exam`).then(r => r.data)
 
+// ─── Topic context ────────────────────────────────────────────────────────────
+export const updateTopicContext = (projectId, topicId, context) =>
+  API.patch(`/api/projects/${projectId}/topics/${topicId}/context`, { context }).then(r => r.data)
+
 // ─── Costs ────────────────────────────────────────────────────────────────────
 export const getCostSummary = (projectId) =>
   API.get(`/api/projects/${projectId}/cost`).then(r => r.data)

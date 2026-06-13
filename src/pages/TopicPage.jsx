@@ -5,7 +5,8 @@ import { useTheme } from '../context/ThemeContext.jsx'
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import {
   getTopic, getMaterials, downloadMaterial,
-  generateNotes, generateSlides, generateExercises, generateExam
+  generateNotes, generateSlides, generateExercises, generateExam,
+  updateTopicContext
 } from '../services/api.js'
 
 const ESTIMATED_COSTS = {
@@ -81,10 +82,12 @@ export default function TopicPage() {
   const { theme } = useTheme()
   const { projectId, topicId } = useParams()
 
-  const [topic,     setTopic]     = useState(null)
-  const [materials, setMaterials] = useState({})
-  const [loading,   setLoading]   = useState(true)
-  const [dialog,    setDialog]    = useState({ open: false, type: null, isAll: false })
+  const [topic,         setTopic]         = useState(null)
+  const [materials,     setMaterials]     = useState({})
+  const [loading,       setLoading]       = useState(true)
+  const [dialog,        setDialog]        = useState({ open: false, type: null, isAll: false })
+  const [topicContext,  setTopicContext]  = useState('')
+  const [contextSaved,  setContextSaved]  = useState(false)
 
   const loadData = useCallback(async () => {
     try {
@@ -93,6 +96,7 @@ export default function TopicPage() {
         getMaterials(projectId, topicId)
       ])
       setTopic(topicData)
+      setTopicContext(topicData.context || '')
       const matsMap = {}
       matsData.forEach(m => { matsMap[m.type] = m })
       setMaterials(matsMap)
@@ -203,6 +207,38 @@ export default function TopicPage() {
         >
           ⚡ {t('materials.generate_all')}
         </button>
+      </div>
+
+      {/* Topic-level instructions */}
+      <div className="mb-6 p-4 rounded-xl border"
+           style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
+        <p className="text-xs font-semibold uppercase tracking-wide mb-2"
+           style={{ color: theme.textSecondary }}>
+          Additional instructions for this unit
+        </p>
+        <textarea
+          value={topicContext}
+          onChange={e => { setTopicContext(e.target.value); setContextSaved(false) }}
+          placeholder="e.g. Focus on PostgreSQL syntax. Include at least one real-world case study per section."
+          rows={2}
+          className="w-full px-3 py-2 rounded-lg border text-sm outline-none resize-none mb-2"
+          style={{ backgroundColor: theme.bg, borderColor: theme.border, color: theme.text }}
+        />
+        <div className="flex items-center justify-end gap-3">
+          {contextSaved && (
+            <span className="text-xs" style={{ color: '#66BB6A' }}>Saved</span>
+          )}
+          <button
+            onClick={async () => {
+              await updateTopicContext(projectId, topicId, topicContext)
+              setContextSaved(true)
+            }}
+            className="px-4 py-1.5 rounded-lg text-xs font-medium"
+            style={{ backgroundColor: theme.primary, color: '#fff' }}
+          >
+            Save instructions
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
