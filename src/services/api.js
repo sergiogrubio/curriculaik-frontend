@@ -96,6 +96,9 @@ export const generateExam = (projectId, topicId) =>
 export const getSourcesStatus = (projectId) =>
   API.get(`/api/projects/${projectId}/sources/status`).then(r => r.data)
 
+export const getIngestProgress = (projectId) =>
+  API.get(`/api/projects/${projectId}/ingest/progress`).then(r => r.data)
+
 // ─── Topic context ────────────────────────────────────────────────────────────
 export const updateTopicContext = (projectId, topicId, context) =>
   API.patch(`/api/projects/${projectId}/topics/${topicId}/context`, { context }).then(r => r.data)

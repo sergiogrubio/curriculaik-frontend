@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, useCallback } from 'react'
 import { useTheme } from '../context/ThemeContext.jsx'
-import { getProject, getTopics, updateProject, getSourcesStatus, uploadSources, ingestSources, getComplianceStatus, generateComplianceReport, downloadComplianceReport, deleteProject } from '../services/api.js'
+import { getProject, getTopics, updateProject, getSourcesStatus, uploadSources, ingestSources, getIngestProgress, getComplianceStatus, generateComplianceReport, downloadComplianceReport, deleteProject } from '../services/api.js'
 
 function TopicRow({ topic, projectId }) {
   const { theme } = useTheme()
@@ -78,6 +78,7 @@ export default function ProjectDetailPage() {
   const [uploadError, setUploadError] = useState(null)
   const [projectContext, setProjectContext] = useState('')
   const [contextSaved, setContextSaved] = useState(false)
+  const [ingestProgress, setIngestProgress] = useState(null)
   const [complianceStatus, setComplianceStatus] = useState(null)
   const [complianceGenerating, setComplianceGenerating] = useState(false)
 
@@ -112,20 +113,26 @@ export default function ProjectDetailPage() {
     return () => clearInterval(id)
   }, [isProcessing, projectId])
 
-  // Poll sources status every 5 s while ingestion is running
+  // Poll sources status + ingest progress every 3 s while ingestion is running
   useEffect(() => {
     if (!ingesting) return
     const id = setInterval(async () => {
       try {
-        const status = await getSourcesStatus(projectId)
+        const [status, progress] = await Promise.all([
+          getSourcesStatus(projectId),
+          getIngestProgress(projectId),
+        ])
         setSourcesStatus(status)
-        // Stop polling once the most recently uploaded material source is ingested
+        setIngestProgress(progress)
+        // Stop polling once complete or the source record is marked ingested
+        const done = progress?.status === 'complete' || progress?.status === 'error'
         const materialSources = (status.sources || []).filter(s => s.type === 'materials')
-        if (materialSources.length > 0 && materialSources[0].ingested) {
+        if (done || (materialSources.length > 0 && materialSources[0].ingested)) {
           setIngesting(false)
+          setIngestProgress(null)
         }
       } catch {}
-    }, 5000)
+    }, 3000)
     return () => clearInterval(id)
   }, [ingesting, projectId])
 
@@ -262,7 +269,10 @@ export default function ProjectDetailPage() {
                 <span className="text-xs px-3 py-1 rounded-full flex items-center gap-1"
                       style={{ backgroundColor: `${theme.primary}22`, color: theme.primary }}>
                   <span className="inline-block animate-spin">⟳</span>
-                  Indexing source materials…
+                  {ingestProgress && ingestProgress.files_total > 0
+                    ? `Indexing… ${ingestProgress.files_done}/${ingestProgress.files_total} files · ${(ingestProgress.chunks_done || 0).toLocaleString()} chunks`
+                    : 'Indexing source materials…'
+                  }
                 </span>
               )}
             </div>
@@ -334,12 +344,37 @@ export default function ProjectDetailPage() {
 
           {/* Ingestion progress banner */}
           {ingesting && (
-            <div className="px-4 py-3 rounded-lg flex items-center gap-3"
-                 style={{ backgroundColor: `${theme.primary}22`, color: theme.primary }}>
-              <span className="inline-block animate-spin text-lg">⟳</span>
-              <span className="text-sm font-medium">
-                Indexing source materials… this may take a few minutes.
-              </span>
+            <div className="px-4 py-4 rounded-lg"
+                 style={{ backgroundColor: `${theme.primary}18`, borderColor: `${theme.primary}44`, border: '1px solid' }}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="inline-block animate-spin text-base" style={{ color: theme.primary }}>⟳</span>
+                <span className="text-sm font-medium" style={{ color: theme.primary }}>
+                  Indexing source materials…
+                </span>
+                {ingestProgress && ingestProgress.files_total > 0 && (
+                  <span className="text-xs ml-auto" style={{ color: theme.textSecondary }}>
+                    {ingestProgress.files_done}/{ingestProgress.files_total} files
+                    {ingestProgress.chunks_done > 0 && ` · ${ingestProgress.chunks_done.toLocaleString()} chunks`}
+                  </span>
+                )}
+              </div>
+              {ingestProgress && ingestProgress.files_total > 0 && (
+                <>
+                  <div className="h-1.5 rounded-full overflow-hidden mb-2"
+                       style={{ backgroundColor: `${theme.primary}33` }}>
+                    <div className="h-full rounded-full transition-all duration-500"
+                         style={{
+                           width: `${Math.round((ingestProgress.files_done / ingestProgress.files_total) * 100)}%`,
+                           backgroundColor: theme.primary,
+                         }} />
+                  </div>
+                  {ingestProgress.current_file && (
+                    <p className="text-xs truncate" style={{ color: theme.textSecondary }}>
+                      Current: {ingestProgress.current_file}
+                    </p>
+                  )}
+                </>
+              )}
             </div>
           )}
 
