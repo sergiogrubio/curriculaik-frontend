@@ -1,16 +1,59 @@
-# React + Vite
+# curriculAIk — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite + Tailwind CSS frontend for the curriculAIk platform.
 
-Currently, two official plugins are available:
+## Requirements
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 20+ (22 recommended)
+- curriculaik-backend running on port 8000
 
-## React Compiler
+## Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 1. Clone and install
 
-## Expanding the ESLint configuration
+```bash
+git clone git@github.com:sergiogrubio/curriculaik-frontend.git
+cd curriculaik-frontend
+npm install
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 2. Environment variables
+
+```bash
+cat > .env << 'ENV'
+VITE_API_URL=http://localhost:8000
+ENV
+```
+
+### 3. Run
+
+```bash
+npm run dev
+```
+
+App available at http://localhost:5173
+
+## Features
+
+- Trilingual interface: English, Spanish, Catalan
+- Three visual themes: Dark Tech, Light Academic, Neutral Corporate
+- Currency selector with live exchange rates (USD, EUR, GBP)
+- Project management with topic list
+- Material generation: notes, slides, exercises, exam
+- Cost tracking per project and session
+- Visual style configuration per project (colors, fonts, logo)
+
+## Pages
+/                          Projects list
+
+/projects/new              Create new project
+
+/projects/:id              Project detail (topics, sources, settings)
+
+/projects/:id/topics/:id   Topic detail (generate materials)
+
+/projects/:id/style        Visual style configuration
+
+/projects/:id/cost         Cost report
+
+/settings                  App settings (theme, language, currency)
