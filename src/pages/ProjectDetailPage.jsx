@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useTheme } from '../context/ThemeContext.jsx'
-import { getProject, getTopics, updateProject, getSourcesStatus, generateComplianceReport, downloadComplianceReport, deleteProject } from '../services/api.js'
+import { getProject, getTopics, updateProject, getSourcesStatus, uploadSources, ingestSources, generateComplianceReport, downloadComplianceReport, deleteProject } from '../services/api.js'
 
 function TopicRow({ topic, projectId }) {
   const { theme } = useTheme()
@@ -74,6 +74,8 @@ export default function ProjectDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [sourcesStatus, setSourcesStatus] = useState(null)
+  const [ingesting, setIngesting] = useState(false)
+  const [uploadError, setUploadError] = useState(null)
   const [projectContext, setProjectContext] = useState('')
   const [contextSaved, setContextSaved] = useState(false)
 
@@ -106,6 +108,23 @@ export default function ProjectDetailPage() {
     }, 5000)
     return () => clearInterval(id)
   }, [isProcessing, projectId])
+
+  // Poll sources status every 5 s while ingestion is running
+  useEffect(() => {
+    if (!ingesting) return
+    const id = setInterval(async () => {
+      try {
+        const status = await getSourcesStatus(projectId)
+        setSourcesStatus(status)
+        // Stop polling once the most recently uploaded material source is ingested
+        const materialSources = (status.sources || []).filter(s => s.type === 'materials')
+        if (materialSources.length > 0 && materialSources[0].ingested) {
+          setIngesting(false)
+        }
+      } catch {}
+    }, 5000)
+    return () => clearInterval(id)
+  }, [ingesting, projectId])
 
   if (loading) return (
     <div className="text-center py-20" style={{ color: theme.textSecondary }}>
@@ -173,7 +192,7 @@ export default function ProjectDetailPage() {
 
       {/* Tabs */}
       <div className="flex gap-4 mb-6 border-b" style={{ borderColor: theme.border }}>
-        {['topics', 'settings'].map(tab => (
+        {['topics', 'sources', 'settings'].map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)}
                   className="pb-3 text-sm font-medium capitalize transition-colors"
                   style={{
@@ -189,20 +208,21 @@ export default function ProjectDetailPage() {
       {activeTab === 'topics' && (
         <div className="space-y-6">
           {/* Sources status indicator */}
-          {sourcesStatus && (
-            <div className="flex items-center gap-2">
-              {sourcesStatus.chunk_count > 0 ? (
+          {sourcesStatus && (sourcesStatus.chunk_count > 0 || sourcesStatus.has_pending) && (
+            <div className="flex items-center gap-2 flex-wrap">
+              {sourcesStatus.chunk_count > 0 && (
                 <span className="text-xs px-3 py-1 rounded-full"
                       style={{ backgroundColor: `${theme.secondary}22`, color: theme.secondary }}>
                   ● {sourcesStatus.chunk_count.toLocaleString()} source chunks indexed
                 </span>
-              ) : sourcesStatus.files_processed > 0 && !sourcesStatus.ingested ? (
+              )}
+              {sourcesStatus.has_pending && (
                 <span className="text-xs px-3 py-1 rounded-full flex items-center gap-1"
                       style={{ backgroundColor: `${theme.primary}22`, color: theme.primary }}>
                   <span className="inline-block animate-spin">⟳</span>
                   Indexing source materials…
                 </span>
-              ) : null}
+              )}
             </div>
           )}
 
@@ -246,6 +266,133 @@ export default function ProjectDetailPage() {
               )}
             </>
           )}
+        </div>
+      )}
+
+      {/* Sources tab */}
+      {activeTab === 'sources' && (
+        <div className="space-y-6">
+
+          {/* Summary row */}
+          <div className="flex gap-6 p-4 rounded-xl border"
+               style={{ backgroundColor: theme.surface, borderColor: theme.border }}>
+            <div>
+              <p className="text-2xl font-bold" style={{ color: theme.secondary }}>
+                {(sourcesStatus?.chunk_count || 0).toLocaleString()}
+              </p>
+              <p className="text-xs" style={{ color: theme.textSecondary }}>chunks indexed</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold" style={{ color: theme.text }}>
+                {(sourcesStatus?.sources || []).filter(s => s.type === 'materials').length}
+              </p>
+              <p className="text-xs" style={{ color: theme.textSecondary }}>ZIPs uploaded</p>
+            </div>
+          </div>
+
+          {/* Ingestion progress banner */}
+          {ingesting && (
+            <div className="px-4 py-3 rounded-lg flex items-center gap-3"
+                 style={{ backgroundColor: `${theme.primary}22`, color: theme.primary }}>
+              <span className="inline-block animate-spin text-lg">⟳</span>
+              <span className="text-sm font-medium">
+                Indexing source materials… this may take a few minutes.
+              </span>
+            </div>
+          )}
+
+          {uploadError && (
+            <p className="text-xs px-3 py-2 rounded-lg"
+               style={{ backgroundColor: '#EF535022', color: '#EF5350' }}>
+              {uploadError}
+            </p>
+          )}
+
+          {/* Uploaded ZIPs list */}
+          {(sourcesStatus?.sources || []).filter(s => s.type === 'materials').length > 0 && (
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wide mb-3"
+                  style={{ color: theme.textSecondary }}>
+                Uploaded source files
+              </h3>
+              <div className="space-y-2">
+                {(sourcesStatus.sources).filter(s => s.type === 'materials').map(s => (
+                  <div key={s.id}
+                       className="flex items-center gap-4 px-4 py-3 rounded-lg border"
+                       style={{ backgroundColor: theme.bg, borderColor: theme.border }}>
+                    <span className="text-xl flex-shrink-0">📦</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate" style={{ color: theme.text }}>
+                        {s.filename}
+                      </p>
+                      <p className="text-xs" style={{ color: theme.textSecondary }}>
+                        {s.created_at ? new Date(s.created_at).toLocaleString() : ''}
+                      </p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      {s.ingested ? (
+                        <span className="text-xs font-medium" style={{ color: '#66BB6A' }}>
+                          ✓ {s.chunk_count.toLocaleString()} chunks
+                        </span>
+                      ) : (
+                        <span className="text-xs" style={{ color: theme.textSecondary }}>
+                          ○ Pending
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Drop zone */}
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wide mb-3"
+                style={{ color: theme.textSecondary }}>
+              Upload additional sources
+            </h3>
+            <label
+              className="flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed transition-colors"
+              style={{
+                borderColor:     ingesting ? theme.border : theme.primary,
+                backgroundColor: ingesting ? theme.bg    : `${theme.primary}11`,
+                cursor:          ingesting ? 'not-allowed' : 'pointer',
+              }}
+            >
+              <input
+                type="file"
+                accept=".zip"
+                className="hidden"
+                disabled={ingesting}
+                onChange={async (e) => {
+                  const file = e.target.files[0]
+                  if (!file) return
+                  e.target.value = ''
+                  setUploadError(null)
+                  try {
+                    await uploadSources(projectId, file)
+                    // Refresh immediately so the new file appears in the list
+                    const status = await getSourcesStatus(projectId)
+                    setSourcesStatus(status)
+                    setIngesting(true)
+                    await ingestSources(projectId)
+                  } catch (err) {
+                    setUploadError(err.response?.data?.detail || err.message)
+                    setIngesting(false)
+                  }
+                }}
+              />
+              <p className="text-2xl mb-2">📦</p>
+              <p className="text-sm font-medium" style={{ color: ingesting ? theme.textSecondary : theme.text }}>
+                {ingesting ? 'Indexing in progress…' : 'Drop a ZIP here or click to browse'}
+              </p>
+              <p className="text-xs mt-1" style={{ color: theme.textSecondary }}>
+                PDF, DOCX, PPTX, TXT files inside the ZIP will be indexed into ChromaDB
+              </p>
+            </label>
+          </div>
+
         </div>
       )}
 
